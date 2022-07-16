@@ -16,41 +16,41 @@ import { UsersService } from './users.service';
 
 @Controller('user')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly service: UsersService) {}
 
   @Get()
   getAll(): Promise<User[]> {
-    return this.usersService.getAll();
+    return this.service.getAll();
   }
 
   @Get(':id')
   async getOneById(@Param('id') id: string, @Res() res: Response) {
-    const { status, body } = await this.usersService.getOneById(id);
+    const { status, body } = await this.service.getOneById(id);
     res.status(status).send(body);
   }
 
   @Post()
-  async createUser(@Body() createUserDto: CreateUserDto, @Res() res: Response) {
-    const { status, body } = await this.usersService.createUser(createUserDto);
+  async createUser(@Body() dto: CreateUserDto, @Res() res: Response) {
+    const { status, body } = await this.service.createUser(dto);
     res.status(status).send(body);
   }
 
   @Put(':id')
   async updatePassword(
     @Param('id') id: string,
-    @Body() updatePasswordDto: UpdatePasswordDto,
+    @Body() dto: UpdatePasswordDto,
     @Res() res: Response,
   ) {
-    const { status, body } = await this.usersService.updatePassword({
+    const { status, body } = await this.service.updatePassword({
       id,
-      updatePasswordDto,
+      dto,
     });
     res.status(status).send(body);
   }
 
   @Delete(':id')
   async deleteUser(@Param('id') id: string, @Res() res: Response) {
-    const { status, body } = await this.usersService.deleteUser(id);
+    const { status, body } = await this.service.deleteUser(id);
     res.status(status).send(body);
   }
 }

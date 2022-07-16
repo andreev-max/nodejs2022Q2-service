@@ -47,7 +47,7 @@ export class UsersService {
       return {
         status: 400,
         body: {
-          message: `this id ${id} is not valid`,
+          message: `This id ${id} is not valid`,
         },
       };
     }
@@ -73,13 +73,13 @@ export class UsersService {
 
   async updatePassword({
     id,
-    updatePasswordDto,
+    dto,
   }: {
     id: string;
-    updatePasswordDto: UpdatePasswordDto;
+    dto: UpdatePasswordDto;
   }): Promise<Response> {
     if (isValidUuid(id)) {
-      const { oldPassword, newPassword } = updatePasswordDto;
+      const { oldPassword, newPassword } = dto;
 
       const foundUserIndex = this.data.findIndex((user) => user.id === id);
 
@@ -147,7 +147,7 @@ export class UsersService {
       return {
         status: 400,
         body: {
-          message: `this id ${id} is not valid`,
+          message: `This id ${id} is not valid`,
         },
       };
     }
