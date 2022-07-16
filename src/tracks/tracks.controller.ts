@@ -51,7 +51,6 @@ export class TracksController {
   @Delete(':id')
   async delete(@Param('id') id: string, @Res() res: Response) {
     const { status, body } = await this.service.delete(id);
-    console.log('HERE', { status, body });
     res.status(status).send(body);
   }
 }

@@ -73,29 +73,23 @@ export class TracksService {
 
       if (foundItemIndex > -1) {
         const foundItem = this.data[foundItemIndex];
-        // if (foundUser.password === oldPassword) {
-        //   this.data[foundItemIndex] = {
-        //     ...foundUser,
-        //     password: newPassword,
-        //   };
+        this.data[foundItemIndex] = {
+          ...foundItem,
+          ...dto,
+        };
 
         return {
           status: 200,
-          body: foundItem,
+          body: {
+            ...foundItem,
+            ...dto,
+          },
         };
-        // } else {
-        //   return {
-        //     status: 403,
-        //     body: {
-        //       message: `The old password you entered is not the correct one.`,
-        //     },
-        //   };
-        // }
       } else {
         return {
           status: 404,
           body: {
-            message: `User with this id ${id} is not found`,
+            message: `Track with this id ${id} is not found`,
           },
         };
       }

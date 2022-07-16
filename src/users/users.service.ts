@@ -8,7 +8,7 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 
 interface Response {
   status: number;
-  body: User | { message: string };
+  body: Partial<User> | { message: string };
 }
 
 @Injectable()
@@ -19,10 +19,13 @@ export class UsersService {
     this.data = usersData;
   }
 
-  async getAll(): Promise<User[]> {
-    return this.data.map((user) => ({
-      ...user,
-      password: null,
+  async getAll(): Promise<Partial<User>[]> {
+    return this.data.map(({ id, login, version, createdAt, updatedAt }) => ({
+      id,
+      login,
+      version,
+      createdAt,
+      updatedAt,
     }));
   }
 
@@ -33,7 +36,13 @@ export class UsersService {
       if (foundUser) {
         return {
           status: 200,
-          body: { ...foundUser, password: null },
+          body: {
+            id: foundUser.id,
+            login: foundUser.login,
+            version: foundUser.version,
+            createdAt: foundUser.createdAt,
+            updatedAt: foundUser.updatedAt,
+          },
         };
       } else {
         return {
@@ -67,7 +76,13 @@ export class UsersService {
 
     return {
       status: 201,
-      body: { ...newUser, password: null },
+      body: {
+        id: newUser.id,
+        login: newUser.login,
+        version: newUser.version,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      },
     };
   }
 
@@ -86,15 +101,25 @@ export class UsersService {
       if (foundUserIndex > -1) {
         const foundUser = this.data[foundUserIndex];
         if (foundUser.password === oldPassword) {
-          this.data[foundUserIndex] = {
-            ...foundUser,
+          const updatedUser = {
+            id: foundUser.id,
+            login: foundUser.login,
             password: newPassword,
+            version: foundUser.version + 1,
+            createdAt: foundUser.createdAt,
+            updatedAt: Date.now(),
           };
+
+          this.data[foundUserIndex] = updatedUser;
 
           return {
             status: 200,
             body: {
-              message: `The password has been updated`,
+              id: updatedUser.id,
+              login: updatedUser.login,
+              version: updatedUser.version,
+              createdAt: updatedUser.createdAt,
+              updatedAt: updatedUser.updatedAt,
             },
           };
         } else {

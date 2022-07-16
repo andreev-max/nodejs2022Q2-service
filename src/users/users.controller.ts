@@ -9,7 +9,6 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { User } from './database/user.interface';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UsersService } from './users.service';
@@ -19,7 +18,7 @@ export class UsersController {
   constructor(private readonly service: UsersService) {}
 
   @Get()
-  getAll(): Promise<User[]> {
+  getAll() {
     return this.service.getAll();
   }
 
