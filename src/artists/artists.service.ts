@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { Album } from 'src/albums/database/album.interface';
+import { albumsData } from 'src/albums/database/albums.data';
+import { Track } from 'src/tracks/database/track.interface';
+import { tracksData } from 'src/tracks/database/tracks.data';
 import { isValidUuid } from 'src/utils/isValidUuid';
 import { v4 } from 'uuid';
 import { Artist } from './database/artist.interface';
@@ -13,19 +17,23 @@ interface Response {
 
 @Injectable()
 export class ArtistsService {
-  public data: Artist[];
+  public artistsData: Artist[];
+  public albumsData: Album[];
+  public tracksData: Track[];
 
   constructor() {
-    this.data = artistsData;
+    this.artistsData = artistsData;
+    this.albumsData = albumsData;
+    this.tracksData = tracksData;
   }
 
   async getAll(): Promise<Artist[]> {
-    return this.data;
+    return this.artistsData;
   }
 
   async getOneById(id: string): Promise<Response> {
     if (isValidUuid(id)) {
-      const foundItem = this.data.find((item) => item.id === id);
+      const foundItem = this.artistsData.find((item) => item.id === id);
 
       if (foundItem) {
         return {
@@ -52,7 +60,7 @@ export class ArtistsService {
 
   async create(dto: CreateArtistDto): Promise<Response> {
     const newItem = { ...dto, id: v4() };
-    this.data.push(newItem);
+    this.artistsData.push(newItem);
 
     return {
       status: 201,
@@ -67,13 +75,14 @@ export class ArtistsService {
     id: string;
     dto: UpdateArtistDto;
   }): Promise<Response> {
-    console.log(dto);
     if (isValidUuid(id)) {
-      const foundItemIndex = this.data.findIndex((item) => item.id === id);
+      const foundItemIndex = this.artistsData.findIndex(
+        (item) => item.id === id,
+      );
 
       if (foundItemIndex > -1) {
-        const foundItem = this.data[foundItemIndex];
-        this.data[foundItemIndex] = {
+        const foundItem = this.artistsData[foundItemIndex];
+        this.artistsData[foundItemIndex] = {
           ...foundItem,
           ...dto,
         };
@@ -105,10 +114,35 @@ export class ArtistsService {
 
   async delete(id: string): Promise<Response> {
     if (isValidUuid(id)) {
-      const foundItemIndex = this.data.findIndex((item) => item.id === id);
+      const foundItemIndex = this.artistsData.findIndex(
+        (item) => item.id === id,
+      );
 
       if (foundItemIndex > -1) {
-        this.data.splice(foundItemIndex, 1);
+        this.artistsData.splice(foundItemIndex, 1);
+
+        const foundTrackId = tracksData.findIndex(
+          (track) => track.artistId === id,
+        );
+        if (foundTrackId) {
+          const foundTrack = tracksData[foundTrackId];
+          tracksData.splice(foundItemIndex, 1, {
+            ...foundTrack,
+            artistId: null,
+          });
+        }
+
+        const foundAlbumId = albumsData.findIndex(
+          (album) => album.artistId === id,
+        );
+        if (foundAlbumId) {
+          const foundAlbum = albumsData[foundAlbumId];
+          albumsData.splice(foundItemIndex, 1, {
+            ...foundAlbum,
+            artistId: null,
+          });
+        }
+
         return {
           status: 204,
           body: {

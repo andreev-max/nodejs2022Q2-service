@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { Track } from 'src/tracks/database/track.interface';
+import { tracksData } from 'src/tracks/database/tracks.data';
 import { isValidUuid } from 'src/utils/isValidUuid';
 import { v4 } from 'uuid';
 import { Album } from './database/album.interface';
@@ -13,19 +15,21 @@ interface Response {
 
 @Injectable()
 export class AlbumsService {
-  public data: Album[];
+  public albumsData: Album[];
+  public tracksData: Track[];
 
   constructor() {
-    this.data = albumsData;
+    this.albumsData = albumsData;
+    this.tracksData = tracksData;
   }
 
   async getAll(): Promise<Album[]> {
-    return this.data;
+    return this.albumsData;
   }
 
   async getOneById(id: string): Promise<Response> {
     if (isValidUuid(id)) {
-      const foundItem = this.data.find((item) => item.id === id);
+      const foundItem = this.albumsData.find((item) => item.id === id);
 
       if (foundItem) {
         return {
@@ -52,7 +56,7 @@ export class AlbumsService {
 
   async create(dto: CreateAlbumDto): Promise<Response> {
     const newItem = { ...dto, id: v4() };
-    this.data.push(newItem);
+    this.albumsData.push(newItem);
 
     return {
       status: 201,
@@ -67,13 +71,14 @@ export class AlbumsService {
     id: string;
     dto: UpdateAlbumDto;
   }): Promise<Response> {
-    console.log(dto);
     if (isValidUuid(id)) {
-      const foundItemIndex = this.data.findIndex((item) => item.id === id);
+      const foundItemIndex = this.albumsData.findIndex(
+        (item) => item.id === id,
+      );
 
       if (foundItemIndex > -1) {
-        const foundItem = this.data[foundItemIndex];
-        this.data[foundItemIndex] = {
+        const foundItem = this.albumsData[foundItemIndex];
+        this.albumsData[foundItemIndex] = {
           ...foundItem,
           ...dto,
         };
@@ -105,10 +110,24 @@ export class AlbumsService {
 
   async delete(id: string): Promise<Response> {
     if (isValidUuid(id)) {
-      const foundItemIndex = this.data.findIndex((item) => item.id === id);
+      const foundItemIndex = this.albumsData.findIndex(
+        (item) => item.id === id,
+      );
 
       if (foundItemIndex > -1) {
-        this.data.splice(foundItemIndex, 1);
+        this.albumsData.splice(foundItemIndex, 1);
+
+        const foundTrackId = tracksData.findIndex(
+          (track) => track.albumId === id,
+        );
+        if (foundTrackId) {
+          const foundTrack = tracksData[foundTrackId];
+          tracksData.splice(foundItemIndex, 1, {
+            ...foundTrack,
+            albumId: null,
+          });
+        }
+
         return {
           status: 204,
           body: {

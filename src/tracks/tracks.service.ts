@@ -13,19 +13,19 @@ interface Response {
 
 @Injectable()
 export class TracksService {
-  public data: Track[];
+  public tracksData: Track[];
 
   constructor() {
-    this.data = tracksData;
+    this.tracksData = tracksData;
   }
 
   async getAll(): Promise<Track[]> {
-    return this.data;
+    return this.tracksData;
   }
 
   async getOneById(id: string): Promise<Response> {
     if (isValidUuid(id)) {
-      const foundItem = this.data.find((item) => item.id === id);
+      const foundItem = this.tracksData.find((item) => item.id === id);
 
       if (foundItem) {
         return {
@@ -52,7 +52,7 @@ export class TracksService {
 
   async create(dto: CreateTrackDto): Promise<Response> {
     const newItem = { ...dto, id: v4() };
-    this.data.push(newItem);
+    this.tracksData.push(newItem);
 
     return {
       status: 201,
@@ -67,13 +67,14 @@ export class TracksService {
     id: string;
     dto: UpdateTrackDto;
   }): Promise<Response> {
-    console.log(dto);
     if (isValidUuid(id)) {
-      const foundItemIndex = this.data.findIndex((item) => item.id === id);
+      const foundItemIndex = this.tracksData.findIndex(
+        (item) => item.id === id,
+      );
 
       if (foundItemIndex > -1) {
-        const foundItem = this.data[foundItemIndex];
-        this.data[foundItemIndex] = {
+        const foundItem = this.tracksData[foundItemIndex];
+        this.tracksData[foundItemIndex] = {
           ...foundItem,
           ...dto,
         };
@@ -105,10 +106,12 @@ export class TracksService {
 
   async delete(id: string): Promise<Response> {
     if (isValidUuid(id)) {
-      const foundItemIndex = this.data.findIndex((item) => item.id === id);
+      const foundItemIndex = this.tracksData.findIndex(
+        (item) => item.id === id,
+      );
 
       if (foundItemIndex > -1) {
-        this.data.splice(foundItemIndex, 1);
+        this.tracksData.splice(foundItemIndex, 1);
         return {
           status: 204,
           body: {
