@@ -1,38 +1,34 @@
-import 'dotenv/config';
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { writeFileSync } from 'fs';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule } from '@nestjs/swagger';
+import { parse } from 'yaml';
+import { dirname, join } from 'path';
+import { readFile } from 'fs/promises';
+import 'dotenv/config';
 import { AppModule } from './app.module';
 
+const PORT = process.env.PORT || 4000;
+
 async function start() {
-  try {
-    const PORT = process.env.PORT || 4000;
-    const app = await NestFactory.create(AppModule);
-    app.useGlobalPipes(
-      new ValidationPipe({
-        whitelist: true,
-        transform: true,
-      }),
-    );
+  const app = await NestFactory.create(AppModule);
 
-    const config = new DocumentBuilder()
-      .setTitle('Service NodeJS')
-      .setDescription('The service API description')
-      .setVersion('1.0.0')
-      .addTag('service')
-      .build();
+  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
+  );
 
-    const document = SwaggerModule.createDocument(app, config);
+  const apiFile = await readFile(
+    join(dirname(__dirname), 'doc', 'api.yaml'),
+    'utf-8',
+  );
 
-    writeFileSync('./doc/swagger.json', JSON.stringify(document));
+  const parsedApiFile = parse(apiFile);
 
-    SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('doc', app, parsedApiFile);
 
-    await app.listen(PORT);
-    console.log(`Application is running on: ${await app.getUrl()}`);
-  } catch (e) {
-    console.log(e);
-  }
+  await app.listen(PORT, () =>
+    console.log(`The best application in the world is running on port ${PORT}`),
+  );
 }
+
 start();
