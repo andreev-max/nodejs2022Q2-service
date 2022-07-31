@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { Album } from '@prisma/client';
 import { entityIsNotFound, ENTITY_TYPES } from 'src/constants';
 import { PrismaService } from 'src/prisma.service';
+
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 

@@ -10,10 +10,11 @@ import {
   Put,
   HttpStatus,
 } from '@nestjs/common';
+import { ENTITY_TYPES } from 'src/constants';
+
 import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
-import { ENTITY_TYPES } from 'src/constants';
 
 @Controller(ENTITY_TYPES.TRACK)
 export class TrackController {

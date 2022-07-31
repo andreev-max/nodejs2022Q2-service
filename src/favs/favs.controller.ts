@@ -9,6 +9,7 @@ import {
   ParseUUIDPipe,
 } from '@nestjs/common';
 import { FavsEntityTypes } from 'src/constants';
+
 import { FavsService } from './favs.service';
 
 @Controller('favs')

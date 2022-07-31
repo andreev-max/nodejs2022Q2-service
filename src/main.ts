@@ -5,6 +5,7 @@ import { parse } from 'yaml';
 import { dirname, join } from 'path';
 import { readFile } from 'fs/promises';
 import 'dotenv/config';
+
 import { AppModule } from './app.module';
 import { PrismaService } from './prisma.service';
 

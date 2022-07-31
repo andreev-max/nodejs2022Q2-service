@@ -10,10 +10,11 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { ENTITY_TYPES } from 'src/constants';
+
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ENTITY_TYPES } from 'src/constants';
 
 @Controller(ENTITY_TYPES.USER)
 export class UserController {

@@ -11,6 +11,7 @@ import {
   selectUserWithoutPassword,
 } from 'src/constants';
 import { PrismaService } from 'src/prisma.service';
+
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 

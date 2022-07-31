@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+import { PrismaService } from 'src/prisma.service';
+
 import { TrackService } from './track.service';
 import { TrackController } from './track.controller';
-import { PrismaService } from 'src/prisma.service';
 
 @Module({
   providers: [TrackService, PrismaService],

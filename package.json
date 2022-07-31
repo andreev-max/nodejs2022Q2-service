@@ -22,8 +22,8 @@
     "docker:build": "docker-compose up -d --build",
     "docker:start": "docker-compose start",
     "docker:stop": "docker-compose stop",
-    "docker:scan:app": "docker scan nazdac/service:service_app",
-    "docker:scan:db": "docker scan nazdac/service:service_db",
+    "docker:scan:app": "docker scan nodejs2022q2-service_app",
+    "docker:scan:postgres": "docker scan nodejs2022q2-service_postgres",
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev"
   },
