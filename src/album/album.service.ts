@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { v4 } from 'uuid';
-
-import { IAlbum, ITrack } from 'src/interfaces';
-import db from 'src/db/DB';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Album } from '@prisma/client';
+import { entityIsNotFound, ENTITY_TYPES } from 'src/constants';
+import { PrismaService } from 'src/prisma.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 
@@ -10,57 +9,54 @@ import { UpdateAlbumDto } from './dto/update-album.dto';
 export class AlbumService {
   type: string;
 
-  constructor() {
-    this.type = 'album';
+  constructor(private readonly prisma: PrismaService) {
+    this.type = ENTITY_TYPES.ALBUM;
   }
 
-  async getAll(): Promise<IAlbum[]> {
-    return (await db.getAll(this.type)) as IAlbum[];
+  async findAll(): Promise<Album[]> {
+    return await this.prisma.album.findMany();
   }
 
-  async getOneById(id: string): Promise<IAlbum> {
-    return (await db.getOneById(this.type, id)) as IAlbum;
+  async findById(id: string): Promise<Album> {
+    try {
+      const foundAlbum = await this.prisma.album.findUnique({
+        where: { id },
+      });
+
+      if (!foundAlbum) {
+        throw new NotFoundException(entityIsNotFound(this.type, id));
+      }
+
+      return foundAlbum;
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 
-  async create(createAlbumDto: CreateAlbumDto): Promise<IAlbum> {
-    const newAlbum = {
-      ...createAlbumDto,
-      id: v4(),
-    };
-
-    return (await db.create(this.type, newAlbum)) as IAlbum;
-  }
-
-  async update(id: string, updateAlbumDto: UpdateAlbumDto): Promise<IAlbum> {
-    const oldAlbum = (await db.getOneById(this.type, id)) as IAlbum;
-
-    const updateAlbum = {
-      ...oldAlbum,
-      ...updateAlbumDto,
-    };
-
-    return (await db.update(this.type, id, updateAlbum)) as IAlbum;
-  }
-
-  async delete(id: string): Promise<IAlbum> {
-    const deletedAlbum = (await db.delete(this.type, id)) as IAlbum;
-
-    const allTracks = (await db.getAll('track')) as ITrack[];
-    const allFavorites = await db.getAllFavorites('favorites');
-
-    const favAlbums: IAlbum[] = allFavorites[this.type + 's'];
-
-    allTracks.forEach((track: ITrack) => {
-      if (track?.albumId === deletedAlbum.id)
-        db.update('track', track?.id, { ...track, albumId: null });
+  async create(data: CreateAlbumDto): Promise<Album> {
+    return await this.prisma.album.create({
+      data,
     });
+  }
 
-    const newFavAlbum = favAlbums.filter(
-      (album) => album?.id !== deletedAlbum.id,
-    );
+  async update(id: string, data: UpdateAlbumDto): Promise<Album> {
+    try {
+      return await this.prisma.album.update({
+        where: { id },
+        data,
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
+  }
 
-    db.updateFav(this.type, newFavAlbum);
-
-    return deletedAlbum;
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.album.delete({
+        where: { id },
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 }

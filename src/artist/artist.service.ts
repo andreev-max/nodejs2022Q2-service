@@ -1,9 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { v4 } from 'uuid';
-
-import { IAlbum, IArtist, ITrack } from 'src/interfaces';
-import db from 'src/db/DB';
-
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Artist } from '@prisma/client';
+import { entityIsNotFound, ENTITY_TYPES } from 'src/constants';
+import { PrismaService } from 'src/prisma.service';
 import { CreateArtistDto } from './dto/create-artist.dto';
 import { UpdateArtistDto } from './dto/update-artist.dto';
 
@@ -11,65 +9,54 @@ import { UpdateArtistDto } from './dto/update-artist.dto';
 export class ArtistService {
   type: string;
 
-  constructor() {
-    this.type = 'artist';
+  constructor(private readonly prisma: PrismaService) {
+    this.type = ENTITY_TYPES.ARTIST;
   }
 
-  async getAll(): Promise<IArtist[]> {
-    return (await db.getAll(this.type)) as IArtist[];
+  async findAll(): Promise<Artist[]> {
+    return await this.prisma.artist.findMany();
   }
 
-  async getOneById(id: string): Promise<IArtist> {
-    return (await db.getOneById(this.type, id)) as IArtist;
+  async findById(id: string): Promise<Artist> {
+    try {
+      const foundArtist = await this.prisma.artist.findUnique({
+        where: { id },
+      });
+
+      if (foundArtist) {
+        return foundArtist;
+      }
+
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 
-  async create(createArtistDto: CreateArtistDto): Promise<IArtist> {
-    const newArtist = {
-      ...createArtistDto,
-      id: v4(),
-    };
-
-    return (await db.create(this.type, newArtist)) as IArtist;
-  }
-
-  async update(id: string, updateArtistDto: UpdateArtistDto): Promise<IArtist> {
-    const oldArtist = (await db.getOneById(this.type, id)) as IArtist;
-
-    const updatedArtist = {
-      ...oldArtist,
-      ...updateArtistDto,
-    };
-
-    return (await db.update(this.type, id, updatedArtist)) as IArtist;
-  }
-
-  async delete(id: string): Promise<IArtist> {
-    const deletedArtist = (await db.delete(this.type, id)) as IArtist;
-
-    const allTracks = (await db.getAll('track')) as ITrack[];
-
-    const allAlbums = (await db.getAll('album')) as IAlbum[];
-
-    const allFavorites = await db.getAllFavorites('favorites');
-
-    const favArtist: IArtist[] = allFavorites[this.type + 's'];
-
-    allTracks.forEach((track: ITrack) => {
-      if (track?.artistId === deletedArtist.id)
-        db.update('track', track?.id, { ...track, artistId: null });
+  async create(data: CreateArtistDto): Promise<Artist> {
+    return await this.prisma.artist.create({
+      data,
     });
+  }
 
-    allAlbums.forEach((album: IAlbum) => {
-      if (album?.artistId === deletedArtist.id)
-        db.update('album', album?.id, { ...album, artistId: null });
-    });
+  async update(id: string, data: UpdateArtistDto): Promise<Artist> {
+    try {
+      return await this.prisma.artist.update({
+        where: { id },
+        data,
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
+  }
 
-    const newFavArtist = favArtist.filter(
-      (artist) => artist?.id !== deletedArtist.id,
-    );
-
-    db.updateFav(this.type, newFavArtist);
-
-    return deletedArtist;
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.artist.delete({
+        where: { id },
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 }

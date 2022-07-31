@@ -1,24 +1,74 @@
-import { Injectable } from '@nestjs/common';
-import { IFavorites, IFavoritesResponse } from 'src/interfaces';
-import db from 'src/db/DB';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import { FavsEntityTypes } from 'src/constants';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
 export class FavsService {
-  type: string;
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor() {
-    this.type = 'favorites';
+  async getAllFavs() {
+    return (
+      (await this.prisma.favorites.findFirst({
+        select: {
+          artists: {
+            select: {
+              id: true,
+              name: true,
+              grammy: true,
+            },
+          },
+          tracks: {
+            select: {
+              id: true,
+              name: true,
+              duration: true,
+              artistId: true,
+              albumId: true,
+            },
+          },
+          albums: {
+            select: {
+              id: true,
+              name: true,
+              year: true,
+              artistId: true,
+            },
+          },
+        },
+      })) || { artists: [], tracks: [], albums: [] }
+    );
   }
 
-  async getAll(): Promise<IFavorites> {
-    return await db.getAllFavorites(this.type);
+  async addEntityToFavorite(type: FavsEntityTypes, id: string) {
+    const entity = await this.prisma[type].findFirst({ where: { id } });
+    if (!entity) throw new UnprocessableEntityException();
+
+    const favorites = await this.prisma.favorites.findMany();
+
+    if (!favorites.length) {
+      const create = await this.prisma.favorites.create({
+        data: {},
+      });
+      await this.prisma[type].update({
+        where: { id },
+        data: { favoritesId: create.id },
+      });
+    } else {
+      await this.prisma[type].update({
+        where: { id },
+        data: {
+          favoritesId: favorites[0].id,
+        },
+      });
+    }
   }
 
-  async create(id: string, type: string): Promise<IFavoritesResponse> {
-    return await db.createFav(type, id);
-  }
-
-  async delete(id: string, type: string): Promise<void> {
-    return await db.deleteFav(type, id);
+  async delete(type: FavsEntityTypes, id: string) {
+    return await this.prisma[type].update({
+      where: { id },
+      data: {
+        favoritesId: { set: null },
+      },
+    });
   }
 }

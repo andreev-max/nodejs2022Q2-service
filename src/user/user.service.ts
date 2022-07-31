@@ -1,10 +1,16 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { v4 } from 'uuid';
-
-import { IUser, IUserWithoutPassword } from 'src/interfaces';
-import db from 'src/db/DB';
-import { MESSAGES } from 'src/constants';
-
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { User } from '@prisma/client';
+import {
+  entityIsNotFound,
+  ENTITY_TYPES,
+  MESSAGES,
+  selectUserWithoutPassword,
+} from 'src/constants';
+import { PrismaService } from 'src/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -12,102 +18,78 @@ import { UpdateUserDto } from './dto/update-user.dto';
 export class UserService {
   type: string;
 
-  constructor() {
-    this.type = 'user';
+  constructor(private prisma: PrismaService) {
+    this.type = ENTITY_TYPES.USER;
   }
 
-  async getAll(): Promise<IUserWithoutPassword[]> {
-    const foundUsers = (await db.getAll(this.type)) as IUser[];
-
-    return foundUsers.map(({ login, id, createdAt, updatedAt, version }) => ({
-      login,
-      id,
-      createdAt,
-      updatedAt,
-      version,
-    }));
+  async findAll(): Promise<User[]> {
+    return await this.prisma.user.findMany();
   }
 
-  async getOneById(uuid: string): Promise<IUserWithoutPassword> {
-    const foundUser = (await db.getOneById(this.type, uuid)) as IUser;
+  async findById(id: string): Promise<User> {
+    try {
+      const foundUser = await this.prisma.user.findUnique({
+        where: { id },
+      });
 
-    const { login, createdAt, updatedAt, id, version } = foundUser;
+      if (foundUser) {
+        return foundUser;
+      }
 
-    return {
-      login,
-      createdAt,
-      updatedAt,
-      id,
-      version,
-    };
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 
-  async create(createUserDto: CreateUserDto): Promise<IUserWithoutPassword> {
-    const newUser = {
-      ...createUserDto,
-      id: v4(),
-      createdAt: Date.now(),
-      version: 1,
-      updatedAt: Date.now(),
-    };
+  async create({
+    login,
+    password,
+  }: CreateUserDto): Promise<Omit<User, 'password'>> {
+    const currentTime = Date.now();
 
-    const createdUser: IUser = (await db.create(this.type, newUser)) as IUser;
-
-    const { login, createdAt, updatedAt, id, version } = createdUser;
-
-    return {
-      login,
-      createdAt,
-      updatedAt,
-      id,
-      version,
-    };
+    return await this.prisma.user.create({
+      data: {
+        login,
+        password,
+        createdAt: currentTime,
+        updatedAt: currentTime,
+      },
+      select: selectUserWithoutPassword,
+    });
   }
 
   async update(
-    uuid: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<IUserWithoutPassword> {
-    const oldUser = (await db.getOneById(this.type, uuid)) as IUser;
+    id: string,
+    { newPassword, oldPassword }: UpdateUserDto,
+  ): Promise<Omit<User, 'password'>> {
+    const foundUser = await this.findById(id);
 
-    if (oldUser.password !== updateUserDto.oldPassword) {
+    if (foundUser.password !== oldPassword) {
       throw new ForbiddenException(MESSAGES.OLD_PASSWORD_WRONG);
     }
 
-    const userForUpdate = {
-      ...oldUser,
-      password: updateUserDto.newPassword,
-      version: oldUser.version + 1,
-      updatedAt: Date.now(),
-    };
+    const currentTime = Date.now();
 
-    const createdUser = (await db.update(
-      this.type,
-      uuid,
-      userForUpdate,
-    )) as IUser;
-
-    const { login, createdAt, updatedAt, id, version } = createdUser;
-
-    return {
-      login,
-      createdAt,
-      updatedAt,
-      id,
-      version,
-    };
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        ...foundUser,
+        password: newPassword,
+        updatedAt: currentTime,
+        version: foundUser.version + 1,
+      },
+      select: selectUserWithoutPassword,
+    });
   }
 
-  async delete(uuid: string): Promise<IUserWithoutPassword> {
-    const deletedUser = (await db.delete(this.type, uuid)) as IUser;
-    const { login, createdAt, updatedAt, id, version } = deletedUser;
-
-    return {
-      login,
-      createdAt,
-      updatedAt,
-      id,
-      version,
-    };
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.user.delete({
+        where: { id },
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 }

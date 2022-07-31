@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { IFavorites, ITrack } from 'src/interfaces';
-import { v4 } from 'uuid';
-import db from '../db/DB';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Track } from '@prisma/client';
+import { entityIsNotFound, ENTITY_TYPES } from 'src/constants';
+import { PrismaService } from 'src/prisma.service';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { UpdateTrackDto } from './dto/update-track.dto';
 
@@ -9,51 +9,54 @@ import { UpdateTrackDto } from './dto/update-track.dto';
 export class TrackService {
   type: string;
 
-  constructor() {
-    this.type = 'track';
+  constructor(private readonly prisma: PrismaService) {
+    this.type = ENTITY_TYPES.TRACK;
   }
 
-  async getAll(): Promise<ITrack[]> {
-    return (await db.getAll(this.type)) as ITrack[];
+  async findAll(): Promise<Track[]> {
+    return await this.prisma.track.findMany();
   }
 
-  async getOneById(id: string): Promise<ITrack> {
-    return (await db.getOneById(this.type, id)) as ITrack;
+  async findById(id: string): Promise<Track> {
+    try {
+      const foundTrack = await this.prisma.track.findUnique({
+        where: { id },
+      });
+
+      if (foundTrack) {
+        return foundTrack;
+      }
+
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 
-  async create(createTrackDto: CreateTrackDto): Promise<ITrack> {
-    const newTrack = {
-      ...createTrackDto,
-      id: v4(),
-    };
-
-    return (await db.create(this.type, newTrack)) as ITrack;
+  async create(data: CreateTrackDto): Promise<Track> {
+    return await this.prisma.track.create({
+      data,
+    });
   }
 
-  async update(id: string, updateTrackDto: UpdateTrackDto): Promise<ITrack> {
-    const oldTrack = (await db.getOneById(this.type, id)) as ITrack;
-
-    const updateTrack = {
-      ...oldTrack,
-      ...updateTrackDto,
-    };
-
-    return (await db.update(this.type, id, updateTrack)) as ITrack;
+  async update(id: string, data: UpdateTrackDto): Promise<Track> {
+    try {
+      return await this.prisma.track.update({
+        where: { id },
+        data,
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 
-  async delete(id: string): Promise<ITrack> {
-    const deletedTrack = (await db.delete(this.type, id)) as ITrack;
-
-    const favorites: IFavorites = await db.getAllFavorites('favorites');
-
-    const favTracks: ITrack[] = favorites[this.type + 's'];
-
-    const newFavTracks = favTracks.filter(
-      (track) => track?.id !== deletedTrack.id,
-    );
-
-    db.updateFav(this.type, newFavTracks);
-
-    return deletedTrack;
+  async delete(id: string): Promise<void> {
+    try {
+      await this.prisma.track.delete({
+        where: { id },
+      });
+    } catch (e) {
+      throw new NotFoundException(entityIsNotFound(this.type, id));
+    }
   }
 }

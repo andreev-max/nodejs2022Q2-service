@@ -4,52 +4,61 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
+  ParseUUIDPipe,
   Post,
   Put,
+  HttpStatus,
 } from '@nestjs/common';
-
-import { IAlbum } from 'src/interfaces';
-
+import { ENTITY_TYPES } from 'src/constants';
 import { AlbumService } from './album.service';
 import { CreateAlbumDto } from './dto/create-album.dto';
 import { UpdateAlbumDto } from './dto/update-album.dto';
 
-@Controller('album')
+@Controller(ENTITY_TYPES.ALBUM)
 export class AlbumController {
-  constructor(private readonly albumService: AlbumService) {}
+  constructor(private readonly service: AlbumService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAll(): Promise<IAlbum[]> {
-    return this.albumService.getAll();
+  findAll() {
+    return this.service.findAll();
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
-  getOneById(@Param('id') id: string): Promise<IAlbum> {
-    return this.albumService.getOneById(id);
+  findById(
+    @Param('id', new ParseUUIDPipe({ version: '4' }))
+    id: string,
+  ) {
+    return this.service.findById(id);
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  create(@Body() createAlbumDto: CreateAlbumDto): Promise<IAlbum> {
-    return this.albumService.create(createAlbumDto);
+  create(
+    @Body()
+    createAlbumDto: CreateAlbumDto,
+  ) {
+    return this.service.create(createAlbumDto);
   }
 
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   update(
+    @Param('id', new ParseUUIDPipe({ version: '4' }))
+    id: string,
     @Body() updateAlbumDto: UpdateAlbumDto,
-    @Param('id') id: string,
-  ): Promise<IAlbum> {
-    return this.albumService.update(id, updateAlbumDto);
+  ) {
+    return this.service.update(id, updateAlbumDto);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id') id: string): Promise<IAlbum> {
-    return this.albumService.delete(id);
+  delete(
+    @Param('id', new ParseUUIDPipe({ version: '4' }))
+    id: string,
+  ) {
+    return this.service.delete(id);
   }
 }

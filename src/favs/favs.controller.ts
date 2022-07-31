@@ -3,37 +3,38 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
   Post,
+  HttpStatus,
+  ParseUUIDPipe,
 } from '@nestjs/common';
-
-import { IFavorites, IFavoritesResponse } from 'src/interfaces';
-
+import { FavsEntityTypes } from 'src/constants';
 import { FavsService } from './favs.service';
 
 @Controller('favs')
 export class FavsController {
-  constructor(private readonly favsService: FavsService) {}
+  constructor(private service: FavsService) {}
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  getAll(): Promise<IFavorites> {
-    return this.favsService.getAll();
+  getAllFavs() {
+    return this.service.getAllFavs();
   }
 
   @Post(':type/:id')
-  @HttpCode(HttpStatus.CREATED)
-  create(
-    @Param('id') id: string,
-    @Param('type') type: string,
-  ): Promise<IFavoritesResponse> {
-    return this.favsService.create(id, type);
+  addEntityToFavorite(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('type') type: FavsEntityTypes,
+  ) {
+    return this.service.addEntityToFavorite(type, id);
   }
 
   @Delete(':type/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  delete(@Param('id') id: string, @Param('type') type: string): Promise<void> {
-    return this.favsService.delete(id, type);
+  delete(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('type') type: FavsEntityTypes,
+  ) {
+    return this.service.delete(type, id);
   }
 }

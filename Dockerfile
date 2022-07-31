@@ -1,13 +1,11 @@
 FROM node:lts-alpine
 
-WORKDIR /app 
+WORKDIR /app
 
 COPY package*.json .
 
-RUN npm install
+RUN npm ci
 
 COPY . .
 
-EXPOSE ${PORT}
-
-CMD ["npm", "run", "start:dev"]
+RUN npm run prisma:generate
