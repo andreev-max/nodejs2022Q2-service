@@ -32,13 +32,13 @@ For more information about OpenAPI/Swagger please visit https://swagger.io/.
 For scanning application
 
 ```
-npm run docker:scan:application
+npm run docker:scan:app
 ```
 
 For scanning database
 
 ```
-npm run docker:scan:database
+npm run docker:scan:db
 ```
 
 ---
