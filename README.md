@@ -8,7 +8,13 @@
 ## Downloading
 
 ```
-git clone {repository URL}
+git clone https://github.com/nAzdAc/nodejs2022Q2-service.git
+```
+
+## Go to project root directory
+
+```
+cd nodejs2022Q2-service
 ```
 
 ## Installing NPM modules
@@ -20,12 +26,35 @@ npm install
 ## Running application
 
 ```
-npm start
+npm run docker:build
+```
+
+## Prisma Migrate
+```
+npm run prisma:migrate
 ```
 
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
 For more information about OpenAPI/Swagger please visit https://swagger.io/.
+
+---
+
+## Docker scan
+
+For scanning application
+
+```
+npm run docker:scan:app
+```
+
+For scanning database
+
+```
+npm run docker:scan:postgres
+```
+
+---
 
 ## Testing
 
