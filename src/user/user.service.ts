@@ -9,7 +9,7 @@ import {
   ENTITY_TYPES,
   MESSAGES,
   selectUserWithoutPassword,
-} from 'src/constants';
+} from 'src/utils/constants';
 import { PrismaService } from 'src/prisma.service';
 
 import { CreateUserDto } from './dto/create-user.dto';

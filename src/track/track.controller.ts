@@ -10,7 +10,7 @@ import {
   Put,
   HttpStatus,
 } from '@nestjs/common';
-import { ENTITY_TYPES } from 'src/constants';
+import { ENTITY_TYPES } from 'src/utils/constants';
 
 import { TrackService } from './track.service';
 import { CreateTrackDto } from './dto/create-track.dto';

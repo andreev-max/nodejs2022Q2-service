@@ -10,7 +10,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ENTITY_TYPES } from 'src/constants';
+import { ENTITY_TYPES } from 'src/utils/constants';
 
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';

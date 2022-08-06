@@ -8,7 +8,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
 } from '@nestjs/common';
-import { FavsEntityTypes } from 'src/constants';
+import { FavsEntityTypes } from 'src/utils/constants';
 
 import { FavsService } from './favs.service';
 

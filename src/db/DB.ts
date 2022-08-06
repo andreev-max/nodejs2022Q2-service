@@ -5,7 +5,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { validate } from 'uuid';
-import { MESSAGES, entityIsNotFound, favIsNotFound } from 'src/constants';
+import { MESSAGES, entityIsNotFound, favIsNotFound } from 'src/utils/constants';
 import {
   IUser,
   IArtist,

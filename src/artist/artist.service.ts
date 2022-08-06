@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Artist } from '@prisma/client';
-import { entityIsNotFound, ENTITY_TYPES } from 'src/constants';
+import { entityIsNotFound, ENTITY_TYPES } from 'src/utils/constants';
 import { PrismaService } from 'src/prisma.service';
 
 import { CreateArtistDto } from './dto/create-artist.dto';

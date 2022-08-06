@@ -1,5 +1,5 @@
 import { Injectable, UnprocessableEntityException } from '@nestjs/common';
-import { FavsEntityTypes } from 'src/constants';
+import { FavsEntityTypes } from 'src/utils/constants';
 import { PrismaService } from 'src/prisma.service';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Track } from '@prisma/client';
-import { entityIsNotFound, ENTITY_TYPES } from 'src/constants';
+import { entityIsNotFound, ENTITY_TYPES } from 'src/utils/constants';
 import { PrismaService } from 'src/prisma.service';
 
 import { CreateTrackDto } from './dto/create-track.dto';
