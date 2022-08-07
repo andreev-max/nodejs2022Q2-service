@@ -46,7 +46,7 @@ export class UserService {
   async create({
     login,
     password,
-  }: CreateUserDto): Promise<Omit<User, 'password'>> {
+  }: CreateUserDto): Promise<Omit<User, 'password' | 'hashedRefreshToken'>> {
     const currentTime = Date.now();
 
     return await this.prisma.user.create({
@@ -63,7 +63,7 @@ export class UserService {
   async update(
     id: string,
     { newPassword, oldPassword }: UpdateUserDto,
-  ): Promise<Omit<User, 'password'>> {
+  ): Promise<Omit<User, 'password' | 'hashedRefreshToken'>> {
     const foundUser = await this.findById(id);
 
     if (foundUser.password !== oldPassword) {

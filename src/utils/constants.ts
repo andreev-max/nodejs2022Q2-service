@@ -4,6 +4,8 @@ export enum MESSAGES {
   DUBLICATE_DATA = 'This entity with this id has already existed',
   ADDED_SUCCESSFULY = 'Entety has been added successfully to your favorites',
   USER_NOT_FOUND = 'User with this id is not found',
+  ACCESS_DENIED = 'Access denied for you',
+  REFRESH_TOKEN_INCORRECT = 'refresh token is incorrect',
 }
 
 export const entityIsNotFound = (type: string, id: string) =>

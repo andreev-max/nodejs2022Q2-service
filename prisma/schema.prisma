@@ -9,13 +9,14 @@ datasource db {
 }
 
 model User {
-  id         String      @id @default(uuid())
+  id                  String      @id @default(uuid())
 
-  login      String
-  password   String
-  version    Int         @default(1)
-  createdAt  Int
-  updatedAt  Int
+  login               String
+  password            String
+  version             Int         @default(1)
+  createdAt           Int
+  updatedAt           Int
+  hashedRefreshToken  String?
 }
 
 model Album {

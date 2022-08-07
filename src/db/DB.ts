@@ -14,7 +14,7 @@ import {
   IFavorites,
   Entity,
   IFavoritesResponse,
-} from 'src/interfaces';
+} from 'src/utils/interfaces';
 
 class DB {
   user: IUser[] = [];

@@ -43,3 +43,17 @@ export interface IFavoritesResponse {
   statusCode: number;
   message: string;
 }
+
+export interface Tokens {
+  accessToken: string;
+  refreshToken: string;
+}
+
+export interface JwtPayload {
+  login: string;
+  userId: string;
+}
+
+export interface JwtPayloadWithRefreshToken extends JwtPayload {
+  refreshToken: string;
+}
